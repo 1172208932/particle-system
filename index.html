@@ -1,0 +1,354 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Particle</title>
+	<style>
+		canvas{
+			background-color: black;
+		}
+	</style>
+	<link rel="stylesheet" href="base.css">
+	<script src="http://g.alicdn.com/kissy/k/1.4.7/seed-min.js"></script>
+	<script src="./lib/hilo.js"></script>
+	<script src="./particleSystem.js"></script>
+</head>
+<body>
+	<div class="particleEditor">
+		<div class="stage"></div>
+		<div class="editor"></div>
+		<pre class="cfg"></pre>
+		<div class="texture">上传图片</div>
+		<input type="text" class="frame">
+		<div class="example">
+			<h2 class="title">example</h2>
+			<button data-cfg="starCfg">star</button>
+			<button data-cfg="smokeCfg">smoke</button>
+			<button data-cfg="snowCfg">snow</button>
+			<button data-cfg="fireCfg">fire</button>
+			<button data-cfg="mouseCfg" data-mouse="1">mouse</button>
+			<button data-cfg="mouseCfg2" data-mouse="1">mouse2</button>
+		</div>
+	</div>
+	<script>  
+		var stage, ticker;
+		var particleCfg, particleImg, particleSystem;
+		var canvasWidth = 550;
+		var canvasHeight = 400;
+	</script>
+	<script src="./example.js"></script>
+	<script>
+		var isMouse = false;
+
+	    KISSY.use("dom, event", function(S, dom, event){
+		    var particleEditorElem = dom.get(".particleEditor");
+		    var editorElem = dom.get(".editor", particleEditorElem);
+		    var stageElem = dom.get(".stage", particleEditorElem);
+		    var cfgElem = dom.get(".cfg", particleEditorElem);
+
+		    stage = new Hilo.Stage({
+		        container: stageElem,
+		        width: canvasWidth,
+		        height: canvasHeight
+		    });
+
+		    ticker = new Hilo.Ticker(60);
+		    ticker.addTick(stage);
+		    ticker.start();
+
+		    particleImg = new Image();
+		    particleCfg = starCfg;
+			particleSystem = new Hilo.ParticleSystem(particleCfg);
+			stage.addChild(particleSystem);
+
+		    particleImg.onload = function(){
+		    	particleCfg.particle.image = particleImg;
+		    	particleCfg.particle.frame = particleCfg.particle.frame||[[0, 0, particleImg.width, particleImg.height]];
+		    	// particleCfg.particle.pivotX = particleCfg.particle.pivotX||particleImg.width * .5;
+		    	// particleCfg.particle.pivotY = particleCfg.particle.pivotY||particleImg.height * .5;
+				render();
+		    }
+		    particleImg.src = particleCfg.id + ".png";
+
+		    function render(){
+		    	particleSystem.init(particleCfg);
+		    	particleSystem.start();
+
+		    	var cfg = S.clone(particleCfg);
+		    	delete cfg.particle.image;
+		    	cfgElem.innerHTML = JSON.stringify(cfg, null, "    ");
+		    	framesElem.value = JSON.stringify(particleCfg.particle.frame);
+		    }
+
+		    var itemTpl = 
+		    '<div class="item" data-name="{name}" data-value="{value}" data-type="{type}"> \
+				<div class="name">{name}:</div> \
+				<div class="range"> \
+					<input class="c-range" type="range" max="{max}" min="{min}" step="{step}"/> \
+					<input class="c-value" type="text" /> \
+				</div> \
+		    </div>';
+
+		    var props = S.clone(Hilo.ParticleSystem.PROPS);
+		    var propsDefault = S.clone(Hilo.ParticleSystem.PROPS_DEFAULT);
+		    var str = "";
+
+		    props = props.concat(["emitNum", "emitTime", "totalTime"]);
+
+		    var sysPropDict = {
+		    	emitTime:1,
+		    	emitNum:1,
+		    	totalTime:1
+		    };
+
+		    var propsCfg = {
+		    	x:{
+		    		min:0,
+		    		max:550
+		    	},
+		    	y:{
+		    		min:0,
+		    		max:400
+		    	},
+		    	rotation:{
+		    		min:0,
+		    		max:360
+		    	},
+		    	rotationV:{
+		    		min:-180,
+		    		max:180
+		    	},
+		    	alpha:{
+		    		min:.0001,
+		    		max:1
+		    	},
+		    	alphaV:{
+		    		min:-.05,
+		    		max:.05,
+		    		step:.001
+		    	},
+		    	scaleV:{
+		    		min:-10,
+		    		max:10
+		    	},
+		    	vx:{
+		    		min:-300,
+		    		max:300
+		    	},
+		    	vy:{
+		    		min:-300,
+		    		max:300
+		    	},
+		    	gx:{
+		    		min:-300,
+		    		max:300
+		    	},
+		    	gy:{
+		    		min:-300,
+		    		max:300
+		    	},
+		    	ax:{
+		    		min:-300,
+		    		max:300
+		    	},
+		    	ay:{
+		    		min:-300,
+		    		max:300
+		    	},
+		    	emitNum:{
+		    		min:0,
+		    		max:100
+		    	},
+		    	emitTime:{
+		    		min:.001,
+		    		max:10
+		    	},
+		    	totalTime:{
+		    		min:0,
+		    		max:10
+		    	},
+		    	life:{
+		    		min:0,
+		    		max:10
+		    	}
+		    };
+
+		    S.each(props, function(p){
+		    	var min = -10;
+		    	var max = 10;
+		    	var step = .01;
+
+		    	var cfg = propsCfg[p];
+		    	var isVar = false;
+		    	if(p.indexOf("Var") > -1){
+		    		cfg = propsCfg[p.slice(0, -3)];
+		    		isVar = true;
+		    	}
+
+		    	if(cfg){
+		    		min = cfg.min;
+		    		max = cfg.max;
+		    		step = cfg.step||.01;
+
+		    		if(isVar){
+		    			min = 0;
+		    			max = (cfg.max - cfg.min) * .5;
+		    		}
+		    	}
+		    	str += S.substitute(itemTpl, {
+		    		name:p,
+		    		min:min,
+		    		max:max,
+		    		step:step,
+		    		value:particleCfg.particle[p]||particleCfg[p]||propsDefault[p]||0,
+		    		type:sysPropDict[p]?"sys":"particle"
+		    	});
+		    });
+
+		    dom.html(editorElem, str);
+		    S.each(dom.query(".item", editorElem), function(elem){
+		    	var value = parseFloat(dom.attr(elem, "data-value"));
+		    	var type = parseFloat(dom.attr(elem, "data-type"));
+		    	dom.get(".c-value", elem).value = value;
+		    	dom.get(".c-range", elem).value = value;
+		    });
+
+		    event.delegate(editorElem, "change", ".item", function(e){
+		    	var elem = e.currentTarget;
+		    	var inputElem = e.target;
+		    	var name = dom.attr(elem, "data-name");
+		    	var value = parseFloat(inputElem.value);
+		    	dom.get(".c-value", elem).value = value;
+		    	dom.get(".c-range", elem).value = value;
+		    	if(sysPropDict[name]){
+		    		particleCfg[name] = value;
+		    	}
+		    	else{
+		    		particleCfg.particle[name] = value;
+		    	}
+		    	
+		    	render();
+		    });
+
+		    var getFileUrl = function (callback) {
+		        var file = fileElem.files[0];
+		        if (!file) {
+		            callback('Has No File!');
+		            return;
+		        }
+		        var vendorURL = window.URL || window.webkitURL;
+		        if (vendorURL) {
+		            callback(null, vendorURL.createObjectURL(file));
+		        } else if (window.FileReader) {
+		            var reader  = new FileReader();
+		            reader.onloadend = function () {
+		                callback(null, reader.result);
+		            };
+		            reader.onerror = function () {
+		                callback('Reader Error!');
+		            };
+		            reader.readAsDataURL(file);
+		        } else {
+		            callback('Don\'t support!');
+		        }
+		    };
+
+
+		    var fileElem = dom.create('<input class="texture" type="file" accept="image/*">');
+		    event.on(".texture", "click", function(){
+		    	fileElem.click();
+		    })
+		    event.on(fileElem, "change", function(e){
+		    	getFileUrl(function(msg, src){
+		    		if(src){
+		    			particleImg.onload = function(){
+			    			particleCfg.particle.image = particleImg;
+			    			particleCfg.particle.frame = getImgFrames();
+			    			render();
+			    		}
+			    		particleImg.src = src
+		    		}
+		    	});
+		    	fileElem.value = "";
+		    });
+
+		    var framesElem = dom.get(".frame");
+		    event.on(framesElem, "change", function(e){
+		    	var value = framesElem.value||JSON.stringify(getImgFrames());
+		    	particleCfg.particle.frame = JSON.parse(value);
+		    	render();
+		    });
+
+		    function getImgFrames(){
+		    	return [[0, 0, particleImg.width, particleImg.height]];
+		    }
+
+		    window.test = function(type){
+		    	var cfg = window[type];
+				if(cfg){
+					particleCfg = cfg;
+					cfg.particle.image = particleImg;
+					particleImg.src = "";
+					particleImg.onload = function(){
+						S.each(dom.query(".item", editorElem), function(elem){
+							var name = dom.attr(elem, "data-name");
+					    	var value = particleCfg.particle[name]||particleCfg[name]||0;
+					    	dom.get(".c-value", elem).value = value;
+					    	dom.get(".c-range", elem).value = value;
+					    });
+
+						render();
+					}
+					particleImg.src = cfg.id + ".png?" + Math.random();
+				}
+			};
+
+			event.delegate(".example", "click", "button", function(e){
+				var btn = e.target;
+				test(dom.attr(btn, "data-cfg"));
+				isMouse = dom.attr(btn, "data-mouse");
+				particleSystem.x = isMouse?0:canvasWidth*.5;
+			});
+
+			var fireFrames = [
+				[75, 236, 7, 11],
+				[119, 223, 7, 17],
+				[90, 223, 22, 17],
+				[51, 202, 17, 46],
+				[94, 59, 34, 59],
+				[60, 160, 34, 42],
+				[30, 99, 30, 99],
+				[7, 240, 7, 11],
+				[119, 206, 7, 17],
+				[90, 206, 22, 17],
+				[111, 160, 17, 46],
+				[60, 59, 34, 59],
+				[94, 118, 34, 42],
+				[30, 0, 30, 99],
+				[68, 236, 7, 11],
+				[112, 223, 7, 17],
+				[68, 219, 22, 17],
+				[94, 160, 17, 46],
+				[94, 0, 34, 59],
+				[60, 118, 34, 42],
+				[0, 99, 30, 99],
+				[0, 240, 7, 11],
+				[112, 206, 7, 17],
+				[68, 202, 22, 17],
+				[34, 198, 17, 46],
+				[60, 0, 34, 59],
+				[0, 198, 34, 42],
+				[0, 0, 30, 99]
+			];
+	    });	
+
+		document.onmousemove = function(e){
+			if(particleSystem && isMouse){
+				var cfg = particleSystem.particleCfg;
+				cfg.x = Math.min(e.clientX, 555) - 5;
+				cfg.y = Math.min(e.clientY, 405) - 5;
+			}
+		}
+   </script>
+</body>
+</html>

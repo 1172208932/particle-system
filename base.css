@@ -1,0 +1,66 @@
+body, div, p, textarea {
+    margin: 0;
+    padding: 0; }
+  
+  .particleEditor {
+    position: relative;
+    padding: 5px; }
+    .particleEditor .editor {
+      font-size: 12px;
+      position: absolute;
+      left: 560px;
+      width: 600px; }
+      .particleEditor .editor .item {
+        transform-origin: 0 0;
+        margin-bottom: 5px;
+        float: left; }
+        .particleEditor .editor .item .name {
+          height: 20px;
+          line-height: 20px;
+          width: 80px;
+          float: left;
+          margin-left: 10px;
+          text-align: right; }
+        .particleEditor .editor .item .range {
+          height: 20px;
+          line-height: 20px;
+          float: left; }
+          .particleEditor .editor .item .range .c-value {
+            width: 50px; }
+    .particleEditor .cfg {
+      background: #eee;
+      position: absolute;
+      top: 405px;
+      width: 550px;
+      height: 250px;
+      overflow: scroll; }
+    .particleEditor .texture {
+      position: absolute;
+      top: 450px;
+      left: 600px;
+      width: 100px;
+      height: 30px;
+      text-align: center;
+      line-height: 30px;
+      background: #aaa;
+      cursor: pointer; }
+    .particleEditor .frame {
+      position: absolute;
+      top: 450px;
+      left: 720px;
+      width: 100px;
+      height: 30px;
+      text-align: center;
+      line-height: 30px; }
+    .particleEditor .example {
+      border: 1px solid #999;
+      padding: 10px;
+      position: absolute;
+      top: 500px;
+      left: 600px; }
+      .particleEditor .example h2 {
+        text-align: center;
+        height: 30px; }
+      .particleEditor .example button {
+        cursor: pointer; }
+  
